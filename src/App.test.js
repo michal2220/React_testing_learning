@@ -1,3 +1,5 @@
+
+Wczytano: 12%Pasek postępu: 1.96%
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
