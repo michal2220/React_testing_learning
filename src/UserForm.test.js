@@ -1,43 +1,44 @@
 import { render, screen } from "@testing-library/react";
 import user from "@testing-library/user-event";
 import UserForm from "./UserForm";
+import { act } from "react";
 
 test("it shows two inputs and a button", () => {
-  //Render the component
+  // Render the component
   render(<UserForm />);
 
-  //Manipulate the component or find an elemen in it
+  // Manipulate the component or find an element in it
   const inputs = screen.getAllByRole("textbox");
   const button = screen.getByRole("button");
 
-  //Assertion
+  // Assertions
   expect(inputs).toHaveLength(2);
   expect(button).toBeInTheDocument();
 });
 
-test("it calls onUserAdd when the form is submited", () => {
-  //Not optimal implementation
-  const argList = [];
-  const callback = (...args) => {
-    argList.push(args);
-  };
-  //Try to render
-  render(<UserForm onUserAdd={callback} />);
+test("it calls onUserAdd when the form is submitted", async () => {
+  const mock = jest.fn();
 
-  //Find the two inputs
-  const [nameInput, emailInput] = screen.getAllByRole("textbox");
-  //Simulate tying in a name
-  user.click(nameInput);
-  user.keyboard("name");
+  // Render the component
+  render(<UserForm onUserAdd={mock} />);
 
-  //Simulate tying in a emails
-  user.click(emailInput);
-  user.keyboard("name@email.com");
-  //Find the button
+  // Find the two inputs
+  const nameInput = screen.getByLabelText(/name/i); // Use getByLabelText for better accessibility
+  const emailInput = screen.getByLabelText(/email/i);
+
+  // Simulate typing in a name and email using `user-event`
+  await act(async () => {
+    user.type(nameInput, "name");
+    user.type(emailInput, "name@email.com");
+  });
+
+  // Find the button
   const button = screen.getByRole("button");
-  //Simulate clicking the button
+
+  // Simulate clicking the button
   user.click(button);
-  //Assertion to make sure "onUserAdd" gets called with email/name
-  expect(argList).toHaveLength(1);
-  expect(argList[0][0]).toEqual({ name: "name", email: "name@email.com" });
+
+  // Assertion to make sure "onUserAdd" gets called with email/name
+  expect(mock).toHaveBeenCalled();
+  expect(mock).toHaveBeenCalledWith({ name: "name", email: "name@email.com" });
 });
